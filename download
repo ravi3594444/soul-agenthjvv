@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+opportunities.db
+opportunities.db-wal
+opportunities.db-shm
+*.egg-info/
+dist/
+build/
+target/
+.venv/
+venv/

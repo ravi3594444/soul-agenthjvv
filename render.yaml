@@ -1,0 +1,94 @@
+# render.yaml — Opportunity Engine v3 on Render
+#
+# Two services:
+#   1. arai-chatbot   — Web Service (always-on), runs Arai Telegram bot
+#   2. opp-pipeline   — Cron Job, runs scrape+score+alert every 6 hours
+#
+# Deploy:
+#   1. Push this repo to GitHub
+#   2. Go to https://dashboard.render.com → New → Blueprint
+#   3. Connect your repo — Render auto-reads this file
+#   4. Add your env vars in the dashboard (see envVarGroups below)
+
+services:
+
+  # ── 1. Arai Chatbot — always-on Web Service ──────────────────────────────
+  - type: web
+    name: arai-chatbot
+    runtime: python
+    plan: free          # upgrade to "starter" ($7/mo) to avoid sleep on free tier
+    region: oregon      # pick closest to you: oregon | frankfurt | singapore | ohio
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py --chat
+    healthCheckPath: /  # Render pings GET / — our health.py responds with 200 ok
+    autoDeploy: true    # redeploy automatically on every git push
+
+    envVars:
+      # ── Required ────────────────────────────────────────────────────────────
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false     # "sync: false" = you set this manually in Render dashboard
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+
+      # ── LLM keys (add at least one) ─────────────────────────────────────────
+      - key: GROQ_API_KEY
+        sync: false
+      - key: MISTRAL_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: TOGETHER_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+
+      # ── Optional search APIs ─────────────────────────────────────────────────
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: SERPER_API_KEY
+        sync: false
+
+      # ── Pipeline config ──────────────────────────────────────────────────────
+      - key: ALERT_THRESHOLD
+        value: "7"
+      - key: RECENCY_DAYS
+        value: "7"
+      - key: SUPABASE_DB_URL
+        sync: false
+
+
+  # ── 2. Pipeline Cron — scrape + score + alert every 6 hours ─────────────
+  - type: cron
+    name: opp-pipeline
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    schedule: "0 */6 * * *"   # every 6 hours — adjust as needed
+    startCommand: python main.py  # runs full pipeline (scrape→score→alert)
+
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: MISTRAL_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: TOGETHER_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: SERPER_API_KEY
+        sync: false
+      - key: ALERT_THRESHOLD
+        value: "7"
+      - key: RECENCY_DAYS
+        value: "7"
+      - key: SUPABASE_DB_URL
+        sync: false
