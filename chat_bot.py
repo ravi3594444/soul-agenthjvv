@@ -343,9 +343,9 @@ def run_chat_bot():
                 if not text or not chat_id: continue
 
                 # Security gate
-                if OWNER_CHAT_ID and str(chat_id) != OWNER_CHAT_ID:
-                    _send(chat_id, "Sorry, Arai is a private assistant.")
-                    continue
+                #if OWNER_CHAT_ID and str(chat_id) != OWNER_CHAT_ID:
+                    #_send(chat_id, "Sorry, Arai is a private assistant.")
+                   # continue
 
                 cmd = text.strip()
                 cmd_lower = cmd.lower()
